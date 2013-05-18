@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="ASCII"?>
+<es.um.ssdd.uForth:uFProgram xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:es.um.ssdd.uForth="urn:es.um.ssdd.uForth" xsi:schemaLocation="urn:es.um.ssdd.uForth java://es.um.ssdd.uForth.UForthPackage">
+  <words xsi:type="es.um.ssdd.uForth:String" str="Test String   "/>
+  <words xsi:type="es.um.ssdd.uForth:PlainId" id="PRINTLN"/>
+  <words xsi:type="es.um.ssdd.uForth:PlainId" id="OTHERDEF"/>
+  <words xsi:type="es.um.ssdd.uForth:PlainId" id="STAR"/>
+  <words xsi:type="es.um.ssdd.uForth:Number" value="43.0"/>
+  <words xsi:type="es.um.ssdd.uForth:PlainId" id="DUP"/>
+  <words xsi:type="es.um.ssdd.uForth:PlainId" id="EMIT"/>
+  <words xsi:type="es.um.ssdd.uForth:PlainId" id="PRINTLN"/>
+  <words xsi:type="es.um.ssdd.uForth:Number"/>
+  <words xsi:type="es.um.ssdd.uForth:PlainId" id="IF"/>
+  <words xsi:type="es.um.ssdd.uForth:Number" value="40.0"/>
+  <words xsi:type="es.um.ssdd.uForth:PlainId" id="STARS"/>
+  <words xsi:type="es.um.ssdd.uForth:PlainId" id="ELSE"/>
+  <words xsi:type="es.um.ssdd.uForth:Number"/>
+  <words xsi:type="es.um.ssdd.uForth:PlainId" id="IF"/>
+  <words xsi:type="es.um.ssdd.uForth:String" str="No!"/>
+  <words xsi:type="es.um.ssdd.uForth:PlainId" id="PRINTLN"/>
+  <words xsi:type="es.um.ssdd.uForth:PlainId" id="ELSE"/>
+  <words xsi:type="es.um.ssdd.uForth:String" str="here!"/>
+  <words xsi:type="es.um.ssdd.uForth:PlainId" id="PRINTLN"/>
+  <words xsi:type="es.um.ssdd.uForth:PlainId" id="THEN"/>
+  <words xsi:type="es.um.ssdd.uForth:PlainId" id="THEN"/>
+  <words xsi:type="es.um.ssdd.uForth:PlainId" id="END"/>
+  <definitions name="STAR">
+    <words xsi:type="es.um.ssdd.uForth:Number" value="42.0"/>
+    <words xsi:type="es.um.ssdd.uForth:PlainId" id="EMIT"/>
+    <words xsi:type="es.um.ssdd.uForth:PlainId" id=";"/>
+  </definitions>
+  <definitions name="OTHERDEF">
+    <words xsi:type="es.um.ssdd.uForth:Number" value="42.0"/>
+    <words xsi:type="es.um.ssdd.uForth:PlainId" id="PRINTLN"/>
+    <words xsi:type="es.um.ssdd.uForth:PlainId" id=";"/>
+  </definitions>
+  <definitions name="STARS">
+    <words xsi:type="es.um.ssdd.uForth:Number"/>
+    <words xsi:type="es.um.ssdd.uForth:PlainId" id="DO"/>
+    <words xsi:type="es.um.ssdd.uForth:PlainId" id="STAR"/>
+    <words xsi:type="es.um.ssdd.uForth:PlainId" id="LOOP"/>
+    <words xsi:type="es.um.ssdd.uForth:PlainId" id=";"/>
+  </definitions>
+</es.um.ssdd.uForth:uFProgram>

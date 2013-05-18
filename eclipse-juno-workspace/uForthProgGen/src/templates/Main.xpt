@@ -1,0 +1,30 @@
+«IMPORT es::um::ssdd::uForth»
+
+«DEFINE main FOR uFProgram-»
+«FILE "salida.forth"-»
+
+«EXPAND gendef FOREACH definitions»
+
+«REM»Expandir el programa«ENDREM»
+
+«EXPAND representation FOREACH words SEPARATOR " "-»
+
+«ENDFILE-»
+«ENDDEFINE»
+
+«DEFINE gendef FOR Definition»
+: «name» «EXPAND representation FOREACH words SEPARATOR " "-» 
+«ENDDEFINE»
+
+«DEFINE representation FOR Word-»«ENDDEFINE»
+
+«DEFINE representation FOR Number-»
+«value-»
+«ENDDEFINE»
+
+«DEFINE representation FOR PlainId-»
+«id-»
+«ENDDEFINE»
+
+«DEFINE representation FOR es::um::ssdd::uForth::String-»"«str-»"«ENDDEFINE»
+

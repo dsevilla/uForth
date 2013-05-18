@@ -1,0 +1,13 @@
+: STAR 42 EMIT ;
+
+: OTHERDEF 42 PRINTLN ;
+
+: STARS 0 DO STAR LOOP ;
+
+"Test String   " PRINTLN OTHERDEF STAR 43 DUP EMIT PRINTLN 
+
+(comment) 
+
+0 IF 40 STARS (more comments!!!) ELSE 0 IF "No!" PRINTLN ELSE "here!" PRINTLN THEN () THEN
+
+END

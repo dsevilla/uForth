@@ -1,0 +1,32 @@
+module workflow.Generate
+
+import org.eclipse.emf.mwe.utils.*
+import org.eclipse.xpand2.Generator
+import org.eclipse.xtend.type.impl.java.JavaBeansMetaModel
+import org.eclipse.xtend.typesystem.emf.EmfRegistryMetaModel
+
+var modelFile = "src/model/test.xmi"
+var fileEncoding = "UTF-8"
+var targetDir = "src-gen"
+
+Workflow{
+	bean = StandaloneSetup {
+		registerGeneratedEPackage = "es.um.ssdd.uForth.UForthPackage"
+		platformUri = "."
+	}
+	
+	component = Reader {
+		uri = modelFile
+		modelSlot = "model"
+	}
+	
+	component = Generator {
+		expand = "templates::Main::main FOR model"
+		metaModel = JavaBeansMetaModel {}
+		outlet = {
+			path = targetDir
+		}
+		fileEncoding = fileEncoding
+	}
+
+}
