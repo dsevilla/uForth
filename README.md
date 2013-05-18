@@ -70,4 +70,57 @@ can run uForth programs. The interpreter is not complete at the
 moment, and includes just a few system words, but can be taken as an
 example of building an interpreter. Also, the interpreter is not
 optimized, as could include a previous "compiling" phase that would
-optimize location for jumps for ifs and loops.
+optimize location for jumps for ifs and loops. I will implement these
+optimizations in the future.
+
+## uForthProgGen ##
+
+This is an example project that uses Xpand to produce the original
+uForth program from a model. It could be used as a bare-bones of a
+code generator in any language that implements the instructions of the
+uForth program. It us used in fact by my students as an example for
+generating code for the following project in Erlang.
+
+## forth_interpreter.erl ##
+
+This erlang module is implemented as a server (in the future it will
+be a normal `gen_server`), and, given a constructed uForth program, it
+is able to run it in a simulated memory. Again, it does not contain
+optimizations, but it works. As can be seen, the code for using the
+interpreter from a uForth program could be generated easily by the
+`uForthProgGen` project (exactly the assignment for my students, so
+it is not shown).
+
+The API for the server is easy. It is shown via an example of how to
+build a program with a definition, and how to run it:
+
+    FI = forth_interpreter:start(),
+    forth_interpreter:start_def(FI, {def, "STARS"}),
+    forth_interpreter:new_word(FI, {number, 0}),
+    forth_interpreter:new_word(FI, {plainid, "DO"}),
+    forth_interpreter:new_word(FI, {number, 42}),
+    forth_interpreter:new_word(FI, {plainid, "EMIT"}),
+    forth_interpreter:new_word(FI, {plainid, "LOOP"}),
+    forth_interpreter:new_word(FI, {plainid, ";"}),
+    forth_interpreter:start_program(FI),
+    forth_interpreter:new_word(FI, {number, 20}),
+    forth_interpreter:new_word(FI, {plainid, "STARS"}),
+    forth_interpreter:new_word(FI, {plainid, "END"}),
+    forth_interpreter:run(FI).
+
+Each definition starts with a call to `start_def/2`, and tells the
+interpreter that a new definition starts at the point in memory. When
+the program is meant to start, a call to `start_program/1` tells the
+interpreter so, and the following words form he program itself.
+
+Tests in the module are written *ad-hoc* but will be enhanced in the
+future.
+
+Each system word in the module is implemented as a function that
+transform the `fiState` record that holds the state of the
+interpreter. For instance, for the `+` system word:
+
+    plus_word(State=#fiState{stack=[E1,E2|S], ip=IP}) ->
+        {number, N1} = E1,
+        {number, N2} = E2,
+        State#fiState{stack=[{number,N1+N2}|S], ip=1+IP}.
