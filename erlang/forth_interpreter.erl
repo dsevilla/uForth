@@ -302,11 +302,8 @@ binary_comp_word(Fun) ->
     fun(State=#fiState{stack=[E1,E2|S], ip=IP}) ->
             Result =
                 case {E1,E2} of
-                    {{number, N1},{number,N2}} ->
-                        Z = Fun(N2,N1),
-                        if Z =:= true -> 1; true -> 0 end;
-                    {{string, S1},{string,S2}} ->
-                        Z = Fun(S2,S1),
+                    {{T,V1},{T,V2}} when T =:= string orelse T =:= number ->
+                        Z = Fun(V2,V1),
                         if Z =:= true -> 1; true -> 0 end;
                     _ -> 0
                 end,
