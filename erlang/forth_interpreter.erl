@@ -349,6 +349,7 @@ prepare_state() ->
     ets:insert(Defs, {">", binary_comp_word(fun(X,Y)->X>Y end)}),
     ets:insert(Defs, {">=", binary_comp_word(fun(X,Y)->X>=Y end)}),
     ets:insert(Defs, {"<=", binary_comp_word(fun(X,Y)->X=<Y end)}),
+    ets:insert(Defs, {"<>", binary_comp_word(fun(X,Y)->X/=Y end)}),
     ets:insert(Defs, {"0<", fun zero_less_word/1}),
     ets:insert(Defs, {"0>", fun zero_greater_word/1}),
     ets:insert(Defs, {"0=", fun zero_equal_word/1}),
