@@ -158,7 +158,7 @@ user_defined_word(IP) ->
 %% EMIT
 emit_word(State=#fiState{stack=[H|S], ip=IP}) ->
     {number, Val} = H,
-    io:format("~c", [Val]),
+    io:format("~c", [round(Val)]),
     State#fiState{stack=S, ip=1+IP}.
 
 %% PRINTLN
