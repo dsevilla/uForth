@@ -122,7 +122,7 @@ loop(State=#fiState{ip=IP, startip=Start,
         {pop_word, Pid, Ref} ->
             [Top|Rest] = S,
             Pid ! {self(), Ref, {ok, Top}},
-            loop(State#fiState{stack=S});
+            loop(State#fiState{stack=Rest});
 
         {run, Pid, Ref} ->
             NewState=do_run(State#fiState{ip=Start}),
