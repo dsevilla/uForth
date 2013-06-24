@@ -100,7 +100,7 @@ loop(State=#fiState{ip=IP, startip=Start,
             {def, DefName} = Def,
             ets:insert(D, {DefName, user_defined_word(MIP)}),
             Pid ! {self(), Ref, {ok, start_def, DefName}},
-            loop(State#fiState{maxip=MIP});
+            loop(State);
 
         {start_program, Pid, Ref} ->
             Pid ! {self(), Ref, {ok, start_program, MIP}},
