@@ -8,13 +8,13 @@ language interpreter in Java and Erlang.
 
 This repository contains three projects:
 
-- **uForth** (under the directory `eclipse-juno-workspace`): Includes
+- **uForth** (under the directory `eclipse-workspace`): Includes
   the Eclipse Modeling Framework (EMF) Ecore meta-model representing
   static instances of a uForth program. It also includes a reader (a
   program that interprets uForth programs and converts them into
   instances of the uForth metamodel) and an interpreter (incomplete by
   now, but easily understandable).
-- **uForthProgGen** (under the directory `eclipse-juno-workspace`):
+- **uForthProgGen** (under the directory `eclipse-workspace`):
   Includes a Xpand program that converts instances of the uForth
   metamodel into the original program (modulo comments and
   indentation). It is used to show my students how to process a model
