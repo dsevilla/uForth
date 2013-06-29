@@ -170,7 +170,7 @@ println_word(State=#fiState{stack=[H|S], ip=IP}) ->
     end,
     State#fiState{stack=S, ip=1+IP}.
 
-%% ';'. Fin de definition
+%% ';'. End of definition
 semicolon_word(State=#fiState{cstack=[H|CS]}) ->
     State#fiState{cstack=CS, ip=H}.
 

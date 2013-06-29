@@ -96,16 +96,16 @@ build a program with a definition, and how to run it:
 
     FI = forth_interpreter:start(),
     forth_interpreter:start_def(FI, {def, "STARS"}),
-    forth_interpreter:new_word(FI, {number, 0}),
-    forth_interpreter:new_word(FI, {plainid, "DO"}),
-    forth_interpreter:new_word(FI, {number, 42}),
-    forth_interpreter:new_word(FI, {plainid, "EMIT"}),
-    forth_interpreter:new_word(FI, {plainid, "LOOP"}),
-    forth_interpreter:new_word(FI, {plainid, ";"}),
+    forth_interpreter:new_instruction(FI, {number, 0}),
+    forth_interpreter:new_instruction(FI, {plainid, "DO"}),
+    forth_interpreter:new_instruction(FI, {number, 42}),
+    forth_interpreter:new_instruction(FI, {plainid, "EMIT"}),
+    forth_interpreter:new_instruction(FI, {plainid, "LOOP"}),
+    forth_interpreter:new_instruction(FI, {plainid, ";"}),
     forth_interpreter:start_program(FI),
-    forth_interpreter:new_word(FI, {number, 20}),
-    forth_interpreter:new_word(FI, {plainid, "STARS"}),
-    forth_interpreter:new_word(FI, {plainid, "END"}),
+    forth_interpreter:new_instruction(FI, {number, 20}),
+    forth_interpreter:new_instruction(FI, {plainid, "STARS"}),
+    forth_interpreter:new_instruction(FI, {plainid, "END"}),
     forth_interpreter:run(FI).
 
 Each definition starts with a call to `start_def/2`, and tells the
