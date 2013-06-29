@@ -11,7 +11,12 @@
 -behaviour(gen_server).
 
 %% API
--export([start_link/0]).
+-export([start_link/0,def_marker/2,program_start_marker/1,
+         has_def/2,new_instruction/2,run/1,
+         push_data/2,pop_data/1,
+         tests/0 % tests
+        ]).
+
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -19,11 +24,43 @@
 
 -define(SERVER, ?MODULE). 
 
--record(state, {}).
+-record(state, 
+        {ip=0, %% IP
+         startip=undef, % IP of the start of the program
+         maxip=0, %% max assigned IP for memory management
+         stack, %% data stack
+         cstack, %% control stack
+         lstack, %% loop stack
+         memory, %% simulated memory array
+         defs,
+         vars
+        }).
 
 %%%===================================================================
 %%% API
 %%%===================================================================
+
+def_marker(Def) ->
+    gen_server:call(?MODULE, {def_marker, Def}).
+
+program_start_marker() ->
+    gen_server:call(?MODULE, program_start_marker).
+
+has_def(DefName) ->
+    gen_server:call(?MODULE, {has_def, DefName}).
+
+new_instruction(W) ->
+    gen_server:call(?MODULE, {new_instruction, W}).
+
+push_data(W) ->
+    gen_server:call(?MODULE, {push_data, W}).
+
+pop_data() ->
+    gen_server:call(?MODULE, pop_data).
+
+run() ->
+    gen_server:cast(?MODULE, run). % async
+
 
 %%--------------------------------------------------------------------
 %% @doc
@@ -51,7 +88,39 @@ start_link() ->
 %% @end
 %%--------------------------------------------------------------------
 init([]) ->
-    {ok, #state{}}.
+    Defs = ets:new(definitions,[set]),
+    % Insert predefined functions
+    ets:insert(Defs, {"EMIT", fun emit_word/1}),
+    ets:insert(Defs, {"PRINTLN", fun println_word/1}),
+    ets:insert(Defs, {";", fun semicolon_word/1}),
+    ets:insert(Defs, {"+", fun plus_word/1}),
+    ets:insert(Defs, {"*", fun star_word/1}),
+    ets:insert(Defs, {"DUP", fun dup_word/1}),
+    ets:insert(Defs, {"SWAP", fun swap_word/1}),
+    ets:insert(Defs, {"DROP", fun drop_word/1}),
+    ets:insert(Defs, {"IF", fun if_word/1}),
+    ets:insert(Defs, {"THEN", fun then_word/1}),
+    ets:insert(Defs, {"ELSE", fun else_word/1}),
+    ets:insert(Defs, {"DO", fun do_word/1}),
+    ets:insert(Defs, {"I", fun i_word/1}),
+    ets:insert(Defs, {"LOOP", fun loop_word/1}),
+    ets:insert(Defs, {"+LOOP", fun plusloop_word/1}),
+    ets:insert(Defs, {"STRLEN", fun strlen_word/1}),
+    ets:insert(Defs, {"<", binary_comp_word(fun(X,Y)->X<Y end)}),
+    ets:insert(Defs, {"==", binary_comp_word(fun(X,Y)->X==Y end)}),
+    ets:insert(Defs, {">", binary_comp_word(fun(X,Y)->X>Y end)}),
+    ets:insert(Defs, {">=", binary_comp_word(fun(X,Y)->X>=Y end)}),
+    ets:insert(Defs, {"<=", binary_comp_word(fun(X,Y)->X=<Y end)}),
+    ets:insert(Defs, {"<>", binary_comp_word(fun(X,Y)->X/=Y end)}),
+    ets:insert(Defs, {"0<", fun zero_less_word/1}),
+    ets:insert(Defs, {"0>", fun zero_greater_word/1}),
+    ets:insert(Defs, {"0=", fun zero_equal_word/1}),
+    {ok, #state{stack = [], %% data stack
+                cstack = [], %% control stack
+                lstack = [], %% loop stack
+                memory = array:new( [{size, 1024*1024}, fixed] ),
+                defs = Defs,
+                vars = ets:new(variables, [set])}.
 
 %%--------------------------------------------------------------------
 %% @private
@@ -67,7 +136,9 @@ init([]) ->
 %%                                   {stop, Reason, State}
 %% @end
 %%--------------------------------------------------------------------
-handle_call(_Request, _From, State) ->
+handle_call({def_marker, Def}, _From, State=#state{defs=D,maxip=MIP}) ->
+    {def, DefName} = Def,
+    ets:insert(D, {DefName, user_defined_word(MIP)}),
     Reply = ok,
     {reply, Reply, State}.
 
