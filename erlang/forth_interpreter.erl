@@ -9,8 +9,8 @@
 -module(forth_interpreter).
 
 %% API
--export([start/0,start_def/2,start_program/1,has_def/2,new_word/2,run/1,
-         push_word/2,pop_word/1,
+-export([start/0,start_def/2,start_program/1,has_def/2,new_instruction/2,run/1,
+         push_data/2,pop_data/1,
          tests/0 % tests
         ]).
 
@@ -59,24 +59,24 @@ has_def(Pid, DefName) ->
             M
     end.
 
-new_word(Pid, W) ->
+new_instruction(Pid, W) ->
     Ref = make_ref(),
-    Pid ! {new_word, self(), Ref, W},
+    Pid ! {new_instruction, self(), Ref, W},
     receive
         {Pid, Ref, M} ->
             M
     end.
 
-push_word(Pid, W) ->
+push_data(Pid, W) ->
     Ref = make_ref(),
-    Pid ! {push_word, self(), Ref, W},
+    Pid ! {push_data, self(), Ref, W},
     receive {Pid, Ref, M} ->
             M
     end.
 
-pop_word(Pid) ->
+pop_data(Pid) ->
     Ref = make_ref(),
-    Pid ! {pop_word, self(), Ref},
+    Pid ! {pop_data, self(), Ref},
     receive {Pid, Ref, M} ->
             M
     end.
@@ -110,16 +110,16 @@ loop(State=#fiState{ip=IP, startip=Start,
             Pid ! {self(), Ref, {has_def, ets:lookup(D, DefName)}},
             loop(State);
 
-        {new_word, Pid, Ref, W} ->
-            Pid ! {self(), Ref, {ok, new_word}},
+        {new_instruction, Pid, Ref, W} ->
+            Pid ! {self(), Ref, {ok, new_instruction}},
             loop(State#fiState{maxip=1+MIP,
                                memory=array:set(MIP, W, M)});
 
-        {push_word, Pid, Ref, W} ->
-            Pid ! {self(), Ref, {ok, push_word}},
+        {push_data, Pid, Ref, W} ->
+            Pid ! {self(), Ref, {ok, push_data}},
             loop(State#fiState{stack=[W|S]});
 
-        {pop_word, Pid, Ref} ->
+        {pop_data, Pid, Ref} ->
             [Top|Rest] = S,
             Pid ! {self(), Ref, {ok, Top}},
             loop(State#fiState{stack=Rest});
@@ -382,151 +382,151 @@ tests() ->
 test1() ->
     FI = start(),
     start_program(FI),
-    new_word(FI, {number, 42}),
-    new_word(FI, {plainid, "EMIT"}),
-    new_word(FI, {plainid, "END"}),
+    new_instruction(FI, {number, 42}),
+    new_instruction(FI, {plainid, "EMIT"}),
+    new_instruction(FI, {plainid, "END"}),
     run(FI).
 
 test2() ->
     FI = start(),
     start_program(FI),
-    new_word(FI, {number, 42}),
-    new_word(FI, {plainid, "PRINTLN"}),
-    new_word(FI, {plainid, "END"}),
+    new_instruction(FI, {number, 42}),
+    new_instruction(FI, {plainid, "PRINTLN"}),
+    new_instruction(FI, {plainid, "END"}),
     run(FI).
 
 test3() ->
     FI = start(),
     start_program(FI),
-    new_word(FI, {number, 42}),
-    new_word(FI, {number, 42}),
-    new_word(FI, {plainid, "+"}),
-    new_word(FI, {plainid, "END"}),
+    new_instruction(FI, {number, 42}),
+    new_instruction(FI, {number, 42}),
+    new_instruction(FI, {plainid, "+"}),
+    new_instruction(FI, {plainid, "END"}),
     run(FI).
 
 test4() ->
     FI = start(),
     start_program(FI),
-    new_word(FI, {number, 42}),
-    new_word(FI, {plainid, "DUP"}),
-    new_word(FI, {plainid, "+"}),
-    new_word(FI, {plainid, "END"}),
+    new_instruction(FI, {number, 42}),
+    new_instruction(FI, {plainid, "DUP"}),
+    new_instruction(FI, {plainid, "+"}),
+    new_instruction(FI, {plainid, "END"}),
     run(FI).
 
 test_if1() ->
     FI = start(),
     start_program(FI),
-    new_word(FI, {number, 42}),
-    new_word(FI, {plainid, "IF"}),
-    new_word(FI, {number, 42}),
-    new_word(FI, {plainid, "ELSE"}),
-    new_word(FI, {number, 43}),
-    new_word(FI, {plainid, "THEN"}),
-    new_word(FI, {plainid, "EMIT"}),
-    new_word(FI, {plainid, "END"}),
+    new_instruction(FI, {number, 42}),
+    new_instruction(FI, {plainid, "IF"}),
+    new_instruction(FI, {number, 42}),
+    new_instruction(FI, {plainid, "ELSE"}),
+    new_instruction(FI, {number, 43}),
+    new_instruction(FI, {plainid, "THEN"}),
+    new_instruction(FI, {plainid, "EMIT"}),
+    new_instruction(FI, {plainid, "END"}),
     run(FI).
 
 test_if2() ->
     FI = start(),
     start_program(FI),
-    new_word(FI, {number, 0}),
-    new_word(FI, {plainid, "IF"}),
-    new_word(FI, {number, 42}),
-    new_word(FI, {plainid, "ELSE"}),
-    new_word(FI, {number, 43}),
-    new_word(FI, {plainid, "THEN"}),
-    new_word(FI, {plainid, "EMIT"}),
-    new_word(FI, {plainid, "END"}),
+    new_instruction(FI, {number, 0}),
+    new_instruction(FI, {plainid, "IF"}),
+    new_instruction(FI, {number, 42}),
+    new_instruction(FI, {plainid, "ELSE"}),
+    new_instruction(FI, {number, 43}),
+    new_instruction(FI, {plainid, "THEN"}),
+    new_instruction(FI, {plainid, "EMIT"}),
+    new_instruction(FI, {plainid, "END"}),
     run(FI).
 
 test5() ->
     FI = start(),
     start_def(FI, {def, "STAR"}),
-    new_word(FI, {number, 42}),
-    new_word(FI, {plainid, "EMIT"}),
-    new_word(FI, {plainid, ";"}),
+    new_instruction(FI, {number, 42}),
+    new_instruction(FI, {plainid, "EMIT"}),
+    new_instruction(FI, {plainid, ";"}),
     start_program(FI),
-    new_word(FI, {plainid, "STAR"}),
-    new_word(FI, {plainid, "END"}),
+    new_instruction(FI, {plainid, "STAR"}),
+    new_instruction(FI, {plainid, "END"}),
     run(FI).
 
 test6() ->
     FI = start(),
     start_def(FI, {def, "STARS"}),
-    new_word(FI, {number, 0}),
-    new_word(FI, {plainid, "DO"}),
-    new_word(FI, {number, 42}),
-    new_word(FI, {plainid, "EMIT"}),
-    new_word(FI, {plainid, "LOOP"}),
-    new_word(FI, {plainid, ";"}),
+    new_instruction(FI, {number, 0}),
+    new_instruction(FI, {plainid, "DO"}),
+    new_instruction(FI, {number, 42}),
+    new_instruction(FI, {plainid, "EMIT"}),
+    new_instruction(FI, {plainid, "LOOP"}),
+    new_instruction(FI, {plainid, ";"}),
     start_program(FI),
-    new_word(FI, {number, 20}),
-    new_word(FI, {plainid, "STARS"}),
-    new_word(FI, {plainid, "END"}),
+    new_instruction(FI, {number, 20}),
+    new_instruction(FI, {plainid, "STARS"}),
+    new_instruction(FI, {plainid, "END"}),
     run(FI).
 
 test7() ->
     FI = start(),
     start_def(FI, {def, "STARS"}),
-    new_word(FI, {number, 0}),
-    new_word(FI, {plainid, "DO"}),
-    new_word(FI, {number, 43}),
-    new_word(FI, {plainid, "EMIT"}),
-    new_word(FI, {plainid, "LOOP"}),
-    new_word(FI, {plainid, ";"}),
+    new_instruction(FI, {number, 0}),
+    new_instruction(FI, {plainid, "DO"}),
+    new_instruction(FI, {number, 43}),
+    new_instruction(FI, {plainid, "EMIT"}),
+    new_instruction(FI, {plainid, "LOOP"}),
+    new_instruction(FI, {plainid, ";"}),
     start_program(FI),
-    new_word(FI, {number, 20}),
-    new_word(FI, {number, 0}),
-    new_word(FI, {plainid, "DO"}),
-    new_word(FI, {plainid, "I"}),
-    new_word(FI, {plainid, "STARS"}),
-    new_word(FI, {string, ""}),
-    new_word(FI, {plainid, "PRINTLN"}),
-    new_word(FI, {plainid, "LOOP"}),
-    new_word(FI, {plainid, "END"}),
+    new_instruction(FI, {number, 20}),
+    new_instruction(FI, {number, 0}),
+    new_instruction(FI, {plainid, "DO"}),
+    new_instruction(FI, {plainid, "I"}),
+    new_instruction(FI, {plainid, "STARS"}),
+    new_instruction(FI, {string, ""}),
+    new_instruction(FI, {plainid, "PRINTLN"}),
+    new_instruction(FI, {plainid, "LOOP"}),
+    new_instruction(FI, {plainid, "END"}),
     run(FI).
 
 test8() ->
     FI = start(),
     start_def(FI, {def, "STARS"}),
-    new_word(FI, {number, 0}),
-    new_word(FI, {plainid, "DO"}),
-    new_word(FI, {number, 42}),
-    new_word(FI, {plainid, "EMIT"}),
-    new_word(FI, {plainid, "LOOP"}),
-    new_word(FI, {plainid, ";"}),
+    new_instruction(FI, {number, 0}),
+    new_instruction(FI, {plainid, "DO"}),
+    new_instruction(FI, {number, 42}),
+    new_instruction(FI, {plainid, "EMIT"}),
+    new_instruction(FI, {plainid, "LOOP"}),
+    new_instruction(FI, {plainid, ";"}),
     start_program(FI),
-    new_word(FI, {number, 0}),
-    new_word(FI, {number, 20}),
-    new_word(FI, {plainid, "DO"}),
-    new_word(FI, {plainid, "I"}),
-    new_word(FI, {plainid, "STARS"}),
-    new_word(FI, {string, ""}),
-    new_word(FI, {plainid, "PRINTLN"}),
-    new_word(FI, {plainid, "+LOOP"}),
-    new_word(FI, {plainid, "END"}),
+    new_instruction(FI, {number, 0}),
+    new_instruction(FI, {number, 20}),
+    new_instruction(FI, {plainid, "DO"}),
+    new_instruction(FI, {plainid, "I"}),
+    new_instruction(FI, {plainid, "STARS"}),
+    new_instruction(FI, {string, ""}),
+    new_instruction(FI, {plainid, "PRINTLN"}),
+    new_instruction(FI, {plainid, "+LOOP"}),
+    new_instruction(FI, {plainid, "END"}),
     run(FI).
 
 test9() ->
     FI = start(),
     start_program(FI),
-    new_word(FI, {string, "abcdef"}),
-    new_word(FI, {plainid, "STRLEN"}),
-    new_word(FI, {plainid, "END"}),
+    new_instruction(FI, {string, "abcdef"}),
+    new_instruction(FI, {plainid, "STRLEN"}),
+    new_instruction(FI, {plainid, "END"}),
     run(FI).
 
 test10() ->
     FI = start(),
     start_program(FI),
-    new_word(FI, {string, "abcdef"}),
-    new_word(FI, {plainid, "STRLEN"}),
-    new_word(FI, {number, 5}),
-    new_word(FI, {plainid, ">"}),
-    new_word(FI, {plainid, "IF"}),
-    new_word(FI, {string, "Si!"}),
-    new_word(FI, {plainid, "ELSE"}),
-    new_word(FI, {string, "No!"}),
-    new_word(FI, {plainid, "THEN"}),
-    new_word(FI, {plainid, "PRINTLN"}),
-    new_word(FI, {plainid, "END"}),
+    new_instruction(FI, {string, "abcdef"}),
+    new_instruction(FI, {plainid, "STRLEN"}),
+    new_instruction(FI, {number, 5}),
+    new_instruction(FI, {plainid, ">"}),
+    new_instruction(FI, {plainid, "IF"}),
+    new_instruction(FI, {string, "Si!"}),
+    new_instruction(FI, {plainid, "ELSE"}),
+    new_instruction(FI, {string, "No!"}),
+    new_instruction(FI, {plainid, "THEN"}),
+    new_instruction(FI, {plainid, "PRINTLN"}),
+    new_instruction(FI, {plainid, "END"}),
     run(FI).
