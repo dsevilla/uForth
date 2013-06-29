@@ -11,7 +11,7 @@
 -behaviour(gen_server).
 
 %% API
--export([start_link/0,def_marker/2,program_start_marker/1,
+-export([start/0,start_link/0,def_marker/2,program_start_marker/1,
          has_def/2,new_instruction/2,run/1,
          push_data/2,pop_data/1,
          tests/0 % tests
@@ -59,7 +59,7 @@ pop_data() ->
     gen_server:call(?MODULE, pop_data).
 
 run() ->
-    gen_server:cast(?MODULE, run). % async
+    gen_server:call(?MODULE, run).
 
 
 %%--------------------------------------------------------------------
@@ -69,6 +69,9 @@ run() ->
 %% @spec start_link() -> {ok, Pid} | ignore | {error, Error}
 %% @end
 %%--------------------------------------------------------------------
+start() ->
+    gen_server:start({local, ?SERVER}, ?MODULE, [], []).
+
 start_link() ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
@@ -88,7 +91,7 @@ start_link() ->
 %% @end
 %%--------------------------------------------------------------------
 init([]) ->
-    Defs = ets:new(definitions,[set]),
+    Defs = ets:new(?MODULE,[set]),
     % Insert predefined functions
     ets:insert(Defs, {"EMIT", fun emit_word/1}),
     ets:insert(Defs, {"PRINTLN", fun println_word/1}),
@@ -140,7 +143,14 @@ handle_call({def_marker, Def}, _From, State=#state{defs=D,maxip=MIP}) ->
     {def, DefName} = Def,
     ets:insert(D, {DefName, user_defined_word(MIP)}),
     Reply = ok,
-    {reply, Reply, State}.
+    {reply, Reply, State};
+
+%% This synchronous call causes an async call to the gen server.
+%% From is used to answer the data stack back when the executin finishes.
+handle_call(run, Def, From, State) ->
+    gen_server:cast(?MODULE, {run, From}),
+    {reply, ok, State}.
+
 
 %%--------------------------------------------------------------------
 %% @private
@@ -152,6 +162,11 @@ handle_call({def_marker, Def}, _From, State=#state{defs=D,maxip=MIP}) ->
 %%                                  {stop, Reason, State}
 %% @end
 %%--------------------------------------------------------------------
+handle_cast({run, {Pid,_Tag}}, State=#state{startip=Start}) ->
+    NewState=do_run(State#state{ip=Start}),
+    Pid ! {self(), {run, NewState#state.stack}},
+    {noreply, NewState};
+
 handle_cast(_Msg, State) ->
     {noreply, State}.
 
