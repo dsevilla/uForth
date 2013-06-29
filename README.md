@@ -95,22 +95,22 @@ The API for the server is easy. It is shown via an example of how to
 build a program with a definition, and how to run it:
 
     FI = forth_interpreter:start(),
-    forth_interpreter:start_def(FI, {def, "STARS"}),
+    forth_interpreter:def_marker(FI, {def, "STARS"}),
     forth_interpreter:new_instruction(FI, {number, 0}),
     forth_interpreter:new_instruction(FI, {plainid, "DO"}),
     forth_interpreter:new_instruction(FI, {number, 42}),
     forth_interpreter:new_instruction(FI, {plainid, "EMIT"}),
     forth_interpreter:new_instruction(FI, {plainid, "LOOP"}),
     forth_interpreter:new_instruction(FI, {plainid, ";"}),
-    forth_interpreter:start_program(FI),
+    forth_interpreter:program_start_marker(FI),
     forth_interpreter:new_instruction(FI, {number, 20}),
     forth_interpreter:new_instruction(FI, {plainid, "STARS"}),
     forth_interpreter:new_instruction(FI, {plainid, "END"}),
     forth_interpreter:run(FI).
 
-Each definition starts with a call to `start_def/2`, and tells the
+Each definition starts with a call to `def_marker/2`, and tells the
 interpreter that a new definition starts at the point in memory. When
-the program is meant to start, a call to `start_program/1` tells the
+the program is meant to start, a call to `program_start_marker/1` tells the
 interpreter so, and the following words form he program itself.
 
 Tests in the module are written *ad-hoc* but will be enhanced in the

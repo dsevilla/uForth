@@ -9,7 +9,7 @@
 -module(forth_interpreter).
 
 %% API
--export([start/0,start_def/2,start_program/1,has_def/2,new_instruction/2,run/1,
+-export([start/0,def_marker/2,program_start_marker/1,has_def/2,new_instruction/2,run/1,
          push_data/2,pop_data/1,
          tests/0 % tests
         ]).
@@ -35,17 +35,17 @@ start() ->
     spawn(fun () -> loop(prepare_state()) end).
 
 %%
-start_def(Pid, Def) ->
+def_marker(Pid, Def) ->
     Ref = make_ref(),
-    Pid ! {start_def, self(), Ref, Def},
+    Pid ! {def_marker, self(), Ref, Def},
     receive
         {Pid, Ref, M} ->
             M
     end.
 
-start_program(Pid) ->
+program_start_marker(Pid) ->
     Ref = make_ref(),
-    Pid ! {start_program, self(), Ref},
+    Pid ! {program_start_marker, self(), Ref},
     receive
         {Pid, Ref, M} ->
             M
@@ -96,14 +96,14 @@ loop(State=#fiState{ip=IP, startip=Start,
                     memory=M, stack=S, cstack=CS,
                     maxip=MIP,defs=D,vars=V}) ->
     receive
-        {start_def, Pid, Ref, Def} ->
+        {def_marker, Pid, Ref, Def} ->
             {def, DefName} = Def,
             ets:insert(D, {DefName, user_defined_word(MIP)}),
-            Pid ! {self(), Ref, {ok, start_def, DefName}},
+            Pid ! {self(), Ref, {ok, def_marker, DefName}},
             loop(State);
 
-        {start_program, Pid, Ref} ->
-            Pid ! {self(), Ref, {ok, start_program, MIP}},
+        {program_start_marker, Pid, Ref} ->
+            Pid ! {self(), Ref, {ok, program_start_marker, MIP}},
             loop(State#fiState{startip=MIP});
 
         {has_def, Pid, Ref, DefName} ->
@@ -381,7 +381,7 @@ tests() ->
 
 test1() ->
     FI = start(),
-    start_program(FI),
+    program_start_marker(FI),
     new_instruction(FI, {number, 42}),
     new_instruction(FI, {plainid, "EMIT"}),
     new_instruction(FI, {plainid, "END"}),
@@ -389,7 +389,7 @@ test1() ->
 
 test2() ->
     FI = start(),
-    start_program(FI),
+    program_start_marker(FI),
     new_instruction(FI, {number, 42}),
     new_instruction(FI, {plainid, "PRINTLN"}),
     new_instruction(FI, {plainid, "END"}),
@@ -397,7 +397,7 @@ test2() ->
 
 test3() ->
     FI = start(),
-    start_program(FI),
+    program_start_marker(FI),
     new_instruction(FI, {number, 42}),
     new_instruction(FI, {number, 42}),
     new_instruction(FI, {plainid, "+"}),
@@ -406,7 +406,7 @@ test3() ->
 
 test4() ->
     FI = start(),
-    start_program(FI),
+    program_start_marker(FI),
     new_instruction(FI, {number, 42}),
     new_instruction(FI, {plainid, "DUP"}),
     new_instruction(FI, {plainid, "+"}),
@@ -415,7 +415,7 @@ test4() ->
 
 test_if1() ->
     FI = start(),
-    start_program(FI),
+    program_start_marker(FI),
     new_instruction(FI, {number, 42}),
     new_instruction(FI, {plainid, "IF"}),
     new_instruction(FI, {number, 42}),
@@ -428,7 +428,7 @@ test_if1() ->
 
 test_if2() ->
     FI = start(),
-    start_program(FI),
+    program_start_marker(FI),
     new_instruction(FI, {number, 0}),
     new_instruction(FI, {plainid, "IF"}),
     new_instruction(FI, {number, 42}),
@@ -441,25 +441,25 @@ test_if2() ->
 
 test5() ->
     FI = start(),
-    start_def(FI, {def, "STAR"}),
+    def_marker(FI, {def, "STAR"}),
     new_instruction(FI, {number, 42}),
     new_instruction(FI, {plainid, "EMIT"}),
     new_instruction(FI, {plainid, ";"}),
-    start_program(FI),
+    program_start_marker(FI),
     new_instruction(FI, {plainid, "STAR"}),
     new_instruction(FI, {plainid, "END"}),
     run(FI).
 
 test6() ->
     FI = start(),
-    start_def(FI, {def, "STARS"}),
+    def_marker(FI, {def, "STARS"}),
     new_instruction(FI, {number, 0}),
     new_instruction(FI, {plainid, "DO"}),
     new_instruction(FI, {number, 42}),
     new_instruction(FI, {plainid, "EMIT"}),
     new_instruction(FI, {plainid, "LOOP"}),
     new_instruction(FI, {plainid, ";"}),
-    start_program(FI),
+    program_start_marker(FI),
     new_instruction(FI, {number, 20}),
     new_instruction(FI, {plainid, "STARS"}),
     new_instruction(FI, {plainid, "END"}),
@@ -467,14 +467,14 @@ test6() ->
 
 test7() ->
     FI = start(),
-    start_def(FI, {def, "STARS"}),
+    def_marker(FI, {def, "STARS"}),
     new_instruction(FI, {number, 0}),
     new_instruction(FI, {plainid, "DO"}),
     new_instruction(FI, {number, 43}),
     new_instruction(FI, {plainid, "EMIT"}),
     new_instruction(FI, {plainid, "LOOP"}),
     new_instruction(FI, {plainid, ";"}),
-    start_program(FI),
+    program_start_marker(FI),
     new_instruction(FI, {number, 20}),
     new_instruction(FI, {number, 0}),
     new_instruction(FI, {plainid, "DO"}),
@@ -488,14 +488,14 @@ test7() ->
 
 test8() ->
     FI = start(),
-    start_def(FI, {def, "STARS"}),
+    def_marker(FI, {def, "STARS"}),
     new_instruction(FI, {number, 0}),
     new_instruction(FI, {plainid, "DO"}),
     new_instruction(FI, {number, 42}),
     new_instruction(FI, {plainid, "EMIT"}),
     new_instruction(FI, {plainid, "LOOP"}),
     new_instruction(FI, {plainid, ";"}),
-    start_program(FI),
+    program_start_marker(FI),
     new_instruction(FI, {number, 0}),
     new_instruction(FI, {number, 20}),
     new_instruction(FI, {plainid, "DO"}),
@@ -509,7 +509,7 @@ test8() ->
 
 test9() ->
     FI = start(),
-    start_program(FI),
+    program_start_marker(FI),
     new_instruction(FI, {string, "abcdef"}),
     new_instruction(FI, {plainid, "STRLEN"}),
     new_instruction(FI, {plainid, "END"}),
@@ -517,7 +517,7 @@ test9() ->
 
 test10() ->
     FI = start(),
-    start_program(FI),
+    program_start_marker(FI),
     new_instruction(FI, {string, "abcdef"}),
     new_instruction(FI, {plainid, "STRLEN"}),
     new_instruction(FI, {number, 5}),
