@@ -5,8 +5,8 @@ import org.eclipse.xpand2.Generator
 import org.eclipse.xtend.type.impl.java.JavaBeansMetaModel
 import org.eclipse.xtend.typesystem.emf.EmfRegistryMetaModel
 
-var modelFile = "src/model/test.xmi"
 var fileEncoding = "UTF-8"
+var modelFile = "src/model/test.xmi"
 var targetDir = "src-gen"
 
 Workflow{
@@ -23,10 +23,10 @@ Workflow{
 	component = Generator {
 		expand = "templates::Main::main FOR model"
 		metaModel = JavaBeansMetaModel {}
+        fileEncoding = fileEncoding
 		outlet = {
 			path = targetDir
 		}
-		fileEncoding = fileEncoding
 	}
 
 }
