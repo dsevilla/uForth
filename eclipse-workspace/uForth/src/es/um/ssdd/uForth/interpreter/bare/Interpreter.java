@@ -400,9 +400,7 @@ public class Interpreter
 	private void emit_word(Word w)
 	{
 		if (w instanceof FString)
-		{
 			System.out.print(((FString)w).getValue());
-		}
 		else
 			System.out.print(Character.toString((char)((Number)w).getValue()));	
 	}
